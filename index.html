@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Flores Para Ti</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="stage">
+      <button class="flower-link" id="flowerLink" aria-label="Flores Para Ti">
+        <span class="sunflower" aria-hidden="true">
+          <span class="petals"></span>
+          <span class="inner-petals"></span>
+          <span class="disk"></span>
+        </span>
+        <span class="label">Flores Para Ti<span class="underline"></span></span>
+      </button>
+      <svg class="tree" viewBox="0 0 420 520" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+        <defs>
+          <linearGradient id="bark" x1="0" x2="1">
+            <stop offset="0" stop-color="#6d3516" />
+            <stop offset=".52" stop-color="#9b4e1b" />
+            <stop offset="1" stop-color="#6a3213" />
+          </linearGradient>
+        </defs>
+        <g class="tree-drawing">
+          <path class="wood trunk-body" id="trunkBody" d="" />
+          <path class="wood branch-fill left-low" d="M205 355 C164 315 116 286 61 275 C113 291 156 322 199 370 Z" />
+          <path class="wood branch-fill right-low" d="M209 293 C240 254 279 224 346 205 C283 230 246 264 211 305 Z" />
+          <path class="wood branch-fill left-high" d="M204 237 C164 199 118 178 55 170 C116 189 161 218 202 250 Z" />
+          <path class="wood branch-fill right-high" d="M202 188 C224 145 241 88 247 40 C244 91 229 149 208 202 Z" />
+          <path class="thin t-left-low" d="M145 315 C128 280 110 259 88 249 M118 295 C91 280 70 278 46 277" />
+          <path class="thin t-left-high" d="M146 202 C129 170 107 149 92 127 M168 216 C141 206 117 208 95 217" />
+          <path class="thin t-right-low" d="M264 244 C292 234 323 237 350 252 M293 228 C302 205 321 190 347 182" />
+          <path class="thin t-right-high" d="M228 145 C255 122 285 106 317 101 M251 125 C273 121 291 111 309 95" />
+        </g>
+      </svg>
+      <span class="ground-cover" aria-hidden="true"></span>
+      <span class="ground-line" aria-hidden="true"></span>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
+

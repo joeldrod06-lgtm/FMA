@@ -1,0 +1,205 @@
+:root {
+  --paper: #f7e9da;
+  --text: #884a25;
+  --petal: #ffd52b;
+  --petal-shade: #ec9f08;
+  --center: #3d1907;
+}
+
+* { box-sizing: border-box; }
+
+html, body { width: 100%; min-height: 100%; margin: 0; }
+
+body { background: var(--paper); font-family: Arial, Helvetica, sans-serif; }
+
+.stage {
+  position: relative;
+  --ground-gap: max(6.2vh, env(safe-area-inset-bottom, 0px));
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.flower-link {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.flower-link:focus-visible { outline: 1px solid var(--text); outline-offset: 9px; }
+.flower-link.is-pressed .sunflower { animation: press .28s ease-out; }
+
+.ground-line {
+  position: absolute;
+  z-index: 5;
+  bottom: var(--ground-gap);
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: #492e20;
+}
+
+.tree {
+  position: absolute;
+  z-index: 2;
+  bottom: calc(var(--ground-gap) + 3px);
+  /* JavaScript fija este punto al centro medido del disco al terminar su caída. */
+  left: 50%;
+  width: min(370px, calc(100vw - 32px));
+  height: min(78vh, 520px);
+  height: min(78dvh, 520px);
+  transform: translateX(-50%);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.wood { fill: url(#bark); }
+.thin { fill: none; stroke: #804017; stroke-width: 3px; stroke-linecap: round; }
+
+.tree-drawing {
+  transform-box: view-box;
+  transform-origin: bottom center;
+  transform: scaleY(0);
+}
+.branch-fill, .thin { opacity: 0; }
+/* Capa frontal: oculta lo que queda por debajo del suelo. */
+.ground-cover {
+  position: absolute;
+  z-index: 4;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: var(--ground-gap);
+  background: var(--paper);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.label {
+  width: 145px;
+  margin-left: 1px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.underline { display: block; width: 69px; height: 2px; margin-top: 7px; background: var(--text); }
+
+/* Flor construida con pétalos CSS — no usa ninguna imagen. */
+.sunflower {
+  position: relative;
+  display: block;
+  width: 76px;
+  height: 76px;
+  filter: drop-shadow(0 2px 1px rgba(105, 55, 12, .18));
+  animation: breathe 3.4s ease-in-out infinite;
+}
+
+.petals, .inner-petals { position: absolute; inset: 0; border-radius: 50%; }
+
+.petals {
+  background: repeating-conic-gradient(
+    from 2deg,
+    transparent 0deg 4deg,
+    var(--petal) 5deg 11deg,
+    #ffdf48 12deg 14deg,
+    transparent 15deg 18deg
+  );
+  -webkit-mask: radial-gradient(circle, transparent 0 33%, #000 35% 63%, transparent 65%);
+  mask: radial-gradient(circle, transparent 0 33%, #000 35% 63%, transparent 65%);
+}
+
+.petals::before, .petals::after {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 9deg, transparent 0 11deg, rgba(211, 132, 0, .37) 12deg 15deg, transparent 16deg 23deg);
+}
+
+.petals::after { transform: rotate(7deg) scale(.83); opacity: .75; }
+
+.inner-petals {
+  inset: 15px;
+  background: repeating-conic-gradient(from 0deg, #f4b007 0deg 8deg, #ffcf17 9deg 14deg, #df8900 15deg 19deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 41%, #000 43% 69%, transparent 71%);
+  mask: radial-gradient(circle, transparent 0 41%, #000 43% 69%, transparent 71%);
+}
+
+.disk {
+  /* El borde inferior permanece en contacto con el suelo al comprimirse. */
+  transform-origin: center bottom;
+  position: absolute;
+  inset: 24px;
+  z-index: 2;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 37% 34%, #a2601e 0 4%, transparent 5%),
+    radial-gradient(circle at 60% 69%, #9e5619 0 4%, transparent 5%),
+    radial-gradient(circle at 45% 51%, #bb6c1b 0 3%, transparent 4%),
+    repeating-radial-gradient(circle at 50% 50%, #472008 0 2px, #6d330b 3px 4px, #341405 5px 6px);
+  box-shadow: inset 0 0 0 2px #bd6b10, inset 0 0 7px #210d03;
+}
+
+@keyframes breathe { 50% { transform: rotate(2deg) translateY(-1px); } }
+@keyframes press { 45% { transform: scale(.91); } 100% { transform: scale(1); } }
+
+/* La flor baja suavemente mientras sus pétalos se desvanecen. */
+.stage.is-falling .ground-line { animation: draw-ground .48s ease-out .12s forwards; }
+.stage.is-falling .ground-cover { transform: scaleX(1); }
+.stage.is-falling .flower-link { pointer-events: none; }
+.stage.is-falling .label { animation: vanish-label .18s ease-out forwards; }
+.stage.is-falling .sunflower { animation: none; }
+.stage.is-falling .sunflower {
+  transform: translateY(var(--fall-distance, 0px));
+  transform-origin: bottom center;
+}
+@keyframes draw-ground { to { width: 100%; } }
+@keyframes vanish-label { to { opacity: 0; } }
+@media (max-width: 420px) {
+  .sunflower { width: 69px; height: 69px; }
+  .disk { inset: 22px; }
+  .label { font-size: 15px; }
+
+}
+
+
+
+.heart-blossom {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@supports (height: 100dvh) {
+  .stage { --ground-gap: max(6.2dvh, env(safe-area-inset-bottom, 0px)); }
+}
+
+/* En pantallas estrechas, el texto queda debajo para centrar la semilla y la copa. */
+@media (max-width: 600px) {
+  .flower-link { flex-direction: column; }
+  .label {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    margin: 0;
+    text-align: center;
+  }
+  .underline { margin-inline: auto; }
+}
