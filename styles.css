@@ -284,6 +284,13 @@ body {
     top: max(7.5vh, calc(env(safe-area-inset-top, 0px) + 12px));
     left: max(10px, env(safe-area-inset-left, 0px));
     right: max(10px, env(safe-area-inset-right, 0px));
+    color: #482719;
+    font-family: ui-serif, 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+    font-size: clamp(18px, 5.2vw, 23px);
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.48;
+    letter-spacing: .005em;
   }
 }
 
@@ -313,6 +320,6 @@ body {
 }
 
 @media (max-width: 340px) {
-  .dedication { font-size: 16px; }
+  .dedication { font-size: 17px; }
   .label { font-size: 14px; }
 }
