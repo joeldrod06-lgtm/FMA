@@ -6,6 +6,7 @@ const tree = document.querySelector('.tree');
 const ground = document.querySelector('.ground-line');
 const drawing = document.querySelector('.tree-drawing');
 const trunkBody = document.querySelector('#trunkBody');
+const replayButton = document.querySelector('.replay-button');
 const soften = value => value < .5 ? 2 * value * value : 1 - Math.pow(-2 * value + 2, 2) / 2;
 let landed = false;
 let activeFall = null;
@@ -114,22 +115,28 @@ function bloomHeart() {
       transform: `rotate(${i * 30})`,
     }));
   }
-  flower.append(make('circle', { r: 4.3, fill: '#a76716' }));
-  flower.append(make('circle', { r: 3.2, fill: '#4e290e' }));
-  for (let i = 0; i < 7; i++) {
+  // Dos flores completas: el centro de cada una queda definido antes de aparecer.
+  const letterFlower = flower.cloneNode(true);
+  letterFlower.setAttribute('id', 'canopy-letter-flower');
+  flower.append(make('circle', { r: 2.8, fill: '#ae791d' }));
+  flower.append(make('circle', { r: 1.9, fill: '#79501b' }));
+  letterFlower.append(make('circle', { r: 7.3, fill: '#60330e' }));
+  letterFlower.append(make('circle', { r: 6.5, fill: '#321909' }));
+  for (let i = 0; i < 9; i++) {
     const angle = i * 2.4;
-    flower.append(make('circle', {
-      cx: Math.cos(angle) * 2, cy: Math.sin(angle) * 2, r: .45, fill: '#b78329',
+    letterFlower.append(make('circle', {
+      cx: Math.cos(angle) * 4.8, cy: Math.sin(angle) * 4.8,
+      r: .4, fill: '#926026',
     }));
   }
-  tree.querySelector('defs').append(flower);
+  tree.querySelector('defs').append(flower, letterFlower);
   const canopy = make('g', { class: 'heart-canopy' });
   tree.append(canopy);
   // Polígono usado solo para distribuir flores, sin dibujar un fondo sólido.
   const outline = Array.from({ length: 160 }, (_, i) => {
     const t = i / 160 * Math.PI * 2;
-    return [206.5 + 11.2 * 16 * Math.sin(t) ** 3,
-      183 - 12.7 * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t))];
+    return [210 + 12.65 * 16 * Math.sin(t) ** 3,
+      190 - 11.2 * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t))];
   });
   const inside = (x, y) => {
     let result = false;
@@ -141,43 +148,129 @@ function bloomHeart() {
   };
   let seed = 42;
   const random = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
-  const blossoms = [];
-  for (let row = 0, y = 22; y < 410; y += 15, row++) {
-    for (let x = 24 + row % 2 * 8; x < 390; x += 16) {
-      const px = x + (random() - .5) * 8;
-      const py = y + (random() - .5) * 8;
-      if (!inside(px, py)) continue;
-      const size = .65 + random() * .48;
-      const wrapper = make('g', { transform: `translate(${px} ${py}) rotate(${random() * 360}) scale(${size})` });
-      const blossom = make('use', { href: '#canopy-sunflower', class: 'heart-blossom' });
-      wrapper.append(blossom);
-      canopy.append(wrapper);
-      blossoms.push(blossom);
+  // Mapa de flores, no texto superpuesto. Cada celda oscura es un centro de girasol.
+  const letters = [
+    ['10001', '10010', '10100', '11000', '10100', '10010', '10001'],
+    ['01110', '10001', '10001', '11111', '10001', '10001', '10001'],
+    ['11111', '00100', '00100', '00100', '00100', '00100', '00100'],
+    ['10001', '10001', '01010', '00100', '00100', '00100', '00100'],
+  ];
+  const letterPositions = [];
+  const letterStartX = 78;
+  const letterStartY = 165;
+  const letterStepX = 11.5;
+  const letterStepY = 14.5;
+  for (let glyph = 0; glyph < letters.length; glyph++) {
+    for (let row = 0; row < 7; row++) {
+      for (let col = 0; col < 5; col++) {
+        if (letters[glyph][row][col] !== '1') continue;
+        letterPositions.push({
+          x: letterStartX + (glyph * 6 + col) * letterStepX,
+          y: letterStartY + row * letterStepY,
+        });
+      }
     }
   }
-  // Baraja todas las posiciones: cada flor tiene su propio instante de aparición.
+
+  const blossoms = [];
+  const addBlossom = (px, py, isLetter, size) => {
+      const wrapper = make('g', {
+        transform: `translate(${px} ${py}) rotate(${random() * 360}) scale(${size})`,
+      });
+      const blossom = make('use', {
+        href: isLetter ? '#canopy-letter-flower' : '#canopy-sunflower',
+        class: 'heart-blossom',
+      });
+      wrapper.append(blossom);
+      canopy.append(wrapper);
+      blossoms.push({ blossom, x: px, y: py });
+  };
+
+  // Flores de fondo amplias y cercanas, como la copa compacta de la referencia.
+  for (let row = 0, y = 34; y < 394; y += 18.5, row++) {
+    for (let x = 28 + row % 2 * 9.25; x < 398; x += 18.5) {
+      const px = x + (random() - .5) * 5;
+      const py = y + (random() - .5) * 5;
+      if (!inside(px, py)) continue;
+      if (letterPositions.some(point => Math.hypot(px - point.x, py - point.y) < 8.5)) continue;
+      addBlossom(px, py, false, .84 + random() * .18);
+    }
+  }
+
+  // Las flores de KATY nacen oscuras; nunca se transforman después de aparecer.
+  for (const point of letterPositions) {
+    addBlossom(point.x, point.y, true, .88);
+  }
+
+  // Corazón y letras comparten una sola secuencia aleatoria, flor por flor.
   for (let i = blossoms.length - 1; i > 0; i--) {
     const j = Math.floor(random() * (i + 1));
     [blossoms[i], blossoms[j]] = [blossoms[j], blossoms[i]];
   }
-  let delay = 0;
-  for (const blossom of blossoms) {
-    blossom.animate([
-      { opacity: 0, transform: 'scale(.65)' },
-      { opacity: 1, transform: 'scale(1)' },
+  const timelineStart = document.timeline.currentTime;
+  const blooming = blossoms.map(({ blossom }, index) => {
+    const motion = blossom.animate([
+      { opacity: 0 },
+      { opacity: .08, offset: .22 },
+      { opacity: .26, offset: .44 },
+      { opacity: .53, offset: .66 },
+      { opacity: .8, offset: .84 },
+      { opacity: 1 },
     ], {
-      duration: 420,
-      delay,
-      easing: 'cubic-bezier(.22, .61, .36, 1)',
+      duration: 1050,
+      delay: index / (blossoms.length - 1) * 3000,
+      easing: 'linear',
       fill: 'both',
     });
-    delay += 19 + random() * 15;
-  }
-  for (const branch of tree.querySelectorAll('.branch-fill, .thin')) {
-    branch.animate([{ opacity: 1 }, { opacity: 0 }], {
-      duration: delay, easing: 'ease-in-out', fill: 'forwards',
+    motion.startTime = timelineStart;
+    return motion.finished;
+  });
+  Promise.all(blooming).then(() => {
+    window.setTimeout(() => finishDedication(blossoms, make, random), 400);
+  });
+}
+
+function finishDedication(blossoms, make, random) {
+  const dedication = document.querySelector('.dedication');
+  dedication.hidden = false;
+  dedication.animate([
+    { opacity: 0 },
+    { opacity: .22, offset: .32 },
+    { opacity: .7, offset: .72 },
+    { opacity: 1 },
+  ], { duration: 1250, easing: 'cubic-bezier(.25, .1, .25, 1)', fill: 'both' });
+  const falling = make('g', { class: 'falling-petals' });
+  tree.append(falling);
+
+  // Una lluvia ligera continúa mientras la composición permanezca en pantalla.
+  const dropPetal = () => {
+    const source = blossoms[Math.floor(random() * blossoms.length)];
+    const origin = make('g', { transform: `translate(${source.x} ${source.y})` });
+    const petal = make('ellipse', {
+      cx: 0, cy: 0, rx: 2 + random() * .7, ry: 4.3 + random() * 1.2,
+      fill: ['#ffd52b', '#f7bd14', '#ffe052'][Math.floor(random() * 3)],
     });
-  }
+    origin.append(petal);
+    falling.append(origin);
+    const drift = (random() - .5) * 72;
+    const drop = 520 - source.y + random() * 12;
+    const motion = petal.animate([
+      { opacity: 0, transform: 'translate(0, 0) rotate(0deg)' },
+      { opacity: .1, transform: `translate(${drift * .06}px, ${drop * .05}px) rotate(3deg)`, offset: .16 },
+      { opacity: .38, transform: `translate(${drift * .24}px, ${drop * .22}px) rotate(-5deg)`, offset: .36 },
+      { opacity: .52, transform: `translate(${drift * .52}px, ${drop * .48}px) rotate(7deg)`, offset: .58 },
+      { opacity: .4, transform: `translate(${drift * .78}px, ${drop * .74}px) rotate(-6deg)`, offset: .78 },
+      { opacity: .14, transform: `translate(${drift * .94}px, ${drop * .92}px) rotate(5deg)`, offset: .93 },
+      { opacity: 0, transform: `translate(${drift}px, ${drop}px) rotate(8deg)` },
+    ], {
+      duration: 5200 + random() * 1200,
+      easing: 'linear',
+      fill: 'both',
+    });
+    motion.finished.then(() => origin.remove());
+    window.setTimeout(dropPetal, 680 + random() * 520);
+  };
+  dropPetal();
 }
 
 function growTrunk(startedAt = performance.now()) {
@@ -218,5 +311,16 @@ flowerLink.addEventListener('click', async () => {
 window.addEventListener('resize', updateLayout);
 window.visualViewport?.addEventListener('resize', updateLayout);
 if ('ResizeObserver' in window) new ResizeObserver(updateLayout).observe(stage);
+
+replayButton.addEventListener('click', () => {
+  const url = new URL(window.location.href);
+  url.searchParams.set('replay', Date.now());
+  window.location.replace(url);
+});
+
+if (new URLSearchParams(window.location.search).has('replay')) {
+  window.history.replaceState(null, '', window.location.pathname + window.location.hash);
+  window.requestAnimationFrame(() => flowerLink.click());
+}
 
 

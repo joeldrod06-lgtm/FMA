@@ -8,9 +8,19 @@
 
 * { box-sizing: border-box; }
 
-html, body { width: 100%; min-height: 100%; margin: 0; }
+html, body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+}
 
-body { background: var(--paper); font-family: Arial, Helvetica, sans-serif; }
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--paper);
+  font-family: Arial, Helvetica, sans-serif;
+}
 
 .stage {
   position: relative;
@@ -58,7 +68,7 @@ body { background: var(--paper); font-family: Arial, Helvetica, sans-serif; }
   bottom: calc(var(--ground-gap) + 3px);
   /* JavaScript fija este punto al centro medido del disco al terminar su caída. */
   left: 50%;
-  width: min(370px, calc(100vw - 32px));
+  width: min(420px, calc(100vw - 24px));
   height: min(78vh, 520px);
   height: min(78dvh, 520px);
   transform: translateX(-50%);
@@ -175,7 +185,7 @@ body { background: var(--paper); font-family: Arial, Helvetica, sans-serif; }
   .sunflower { width: 69px; height: 69px; }
   .disk { inset: 22px; }
   .label { font-size: 15px; }
-
+  .tree { width: calc(100vw - 14px); }
 }
 
 
@@ -184,6 +194,7 @@ body { background: var(--paper); font-family: Arial, Helvetica, sans-serif; }
   transform-box: fill-box;
   transform-origin: center;
 }
+
 
 @supports (height: 100dvh) {
   .stage { --ground-gap: max(6.2dvh, env(safe-area-inset-bottom, 0px)); }
@@ -202,4 +213,106 @@ body { background: var(--paper); font-family: Arial, Helvetica, sans-serif; }
     text-align: center;
   }
   .underline { margin-inline: auto; }
+}
+
+.dedication {
+  position: absolute;
+  z-index: 6;
+  top: 61%;
+  left: calc(50% + min(25vw, 235px));
+  width: min(330px, calc(50vw - 255px));
+  margin: 0;
+  color: #56321f;
+  font-family: 'Segoe Script', 'Brush Script MT', 'Lucida Handwriting', cursive;
+  font-size: clamp(19px, 2.1vw, 30px);
+  font-style: italic;
+  line-height: 1.35;
+  letter-spacing: -.035em;
+  text-align: center;
+  pointer-events: none;
+}
+
+.dedication span { display: block; }
+
+.replay-button {
+  display: block;
+  min-width: 72px;
+  min-height: 44px;
+  margin: 1px auto 0;
+  padding: 12px 10px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: 11px/1.2 Arial, Helvetica, sans-serif;
+  letter-spacing: .13em;
+  opacity: .42;
+  cursor: pointer;
+  pointer-events: auto;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity .25s ease;
+}
+
+.replay-button:hover,
+.replay-button:focus-visible { opacity: .78; }
+
+.replay-button:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 4px;
+}
+
+.falling-petals ellipse {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (max-width: 900px) {
+  .dedication {
+    top: max(14px, env(safe-area-inset-top, 0px));
+    left: max(14px, env(safe-area-inset-left, 0px));
+    right: max(14px, env(safe-area-inset-right, 0px));
+    width: auto;
+    font-size: clamp(17px, 4.2vw, 24px);
+  }
+}
+
+@media (max-width: 600px) {
+  .dedication {
+    top: max(7.5vh, calc(env(safe-area-inset-top, 0px) + 12px));
+    left: max(10px, env(safe-area-inset-left, 0px));
+    right: max(10px, env(safe-area-inset-right, 0px));
+  }
+}
+
+@supports (height: 100dvh) {
+  @media (max-width: 600px) {
+    .dedication {
+      top: max(7.5dvh, calc(env(safe-area-inset-top, 0px) + 12px));
+    }
+  }
+}
+
+/* En teléfonos y tabletas horizontales se reserva el costado para la dedicatoria. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .tree {
+    width: min(56vw, 350px);
+    height: calc(100dvh - var(--ground-gap) - 12px);
+  }
+
+  .dedication {
+    top: 42%;
+    left: calc(50% + min(19vw, 160px));
+    right: max(10px, env(safe-area-inset-right, 0px));
+    width: auto;
+    font-size: clamp(14px, 2.5vw, 20px);
+    transform: translateY(-50%);
+  }
+}
+
+@media (max-width: 340px) {
+  .dedication { font-size: 16px; }
+  .label { font-size: 14px; }
 }
